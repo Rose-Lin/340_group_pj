@@ -1,1 +1,1 @@
-# 340_group_pj
+# 340 Group Project
