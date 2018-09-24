@@ -1,4 +1,5 @@
 import sys
+import operator
 
 def parse_classTimes(file):
     with open (file) as f:
@@ -30,11 +31,16 @@ def parse_pref(file):
 
 
 def count_class_size(pref_dict):
-    sizes = [0]*14
+    sizes = {}
     for x in pref_dict:
         for index in pref_dict[x]:
-            sizes[index-1] += 1
-    print sizes
+            if index in sizes.keys():
+                sizes[index] += 1
+            else:
+                sizes[index] = 1
+    n = sorted(sizes.items(), key=operator.itemgetter(1))
+    n.reverse()
+    print(n)
 
 parse_classTimes("./demo_constraints.txt")
 parse_pref("./demo_studentprefs.txt")
