@@ -19,4 +19,10 @@ def parse_classTimes(file):
 def parse_pref(file):
     pass
 
+def count_class_size(pref_dict)
+    sizes = {}
+    for x in pref_dict:
+        for index in pref_dict[x]
+            sizes[x]++
+
 parse_classTimes("./demo_constraints.txt")
