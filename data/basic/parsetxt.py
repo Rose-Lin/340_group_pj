@@ -29,11 +29,13 @@ def parse_pref(file):
     return dict
 
 
-def count_class_size(pref_dict)
-    sizes = {}
+def count_class_size(pref_dict):
+    sizes = [0]*14
     for x in pref_dict:
-        for index in pref_dict[x]
-            sizes[x]++
+        for index in pref_dict[x]:
+            sizes[index-1] += 1
+    print sizes
 
 parse_classTimes("./demo_constraints.txt")
 parse_pref("./demo_studentprefs.txt")
+count_class_size(parse_pref("./demo_studentprefs.txt"))
