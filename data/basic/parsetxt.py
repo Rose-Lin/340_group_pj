@@ -64,15 +64,26 @@ def count_class_size(pref_dict):
 # classes is a list of clsses from count_class_size(), so it should be sorted by popularity already
 # rooms should also be sorted list in increasing order of capacity (room_id, cap)
 def scheduling(classes, students, professors, times, rooms):
-    #sort room #TODO
     Schedule = [[0 for y in rooms] for x in times]
     # a list of indecis of classes in the Schedule
     Position = [0]*len(classes)
+    ava_rooms = [len(times)]*len(rooms)
     for pair in  classes:
         class_id = pair[0]
         popularity = pair[1]
         room_id = 0
         room_id, t, cap = find_valid_room(Schedule, popularity, rooms, professors, class_id)
+        if t == None:
+            # Corner cases: when a specific room has very small capacity, so that the current class c cannot fit in any time of this room, and other rooms are all filled also.
+            for ava_r in range(len( ava_rooms)):
+                if ava_rooms[ava_r] > 0:
+                    room_id = ava_r + 1
+            print(room_id)
+            for row in range (len(Schedule)):
+                if Schedule[row][room_id-1] == 0:
+                    t = row
+                    break
+        ava_rooms[room_id-1] -= 1
         Schedule[t][room_id-1] = class_id
         Position[class_id-1] = (t,room_id-1)
     print("----------Schedule-----------")
@@ -89,9 +100,10 @@ def find_valid_room(Schedule, threshold, rooms, professors, class_id):
         if cap >= threshold:
             room_id = rid
             capacity = cap
-            t = empty_timeslot(Schedule, room_id, professors, class_id) 
+            t = empty_timeslot(Schedule, room_id, professors, class_id)
             if not t == None:
                 break
+    #print(t, room_id)
     return room_id, t, capacity 
 
 def empty_timeslot(Schedule, room_id, professors, class_id):
@@ -106,7 +118,7 @@ def empty_timeslot(Schedule, room_id, professors, class_id):
     
 def sort_room_cap(Class_list):
     Class_list.sort(key = lambda x: x[1])
-    Class_list.reverse()
+    # Class_list.reverse()
     #print (Class_list)
     return Class_list
     
@@ -144,10 +156,11 @@ def edgeWeights(dict):
     # print(len(weight))
     return weight
 
-professors, rooms, times = parse_classTimes("./demo_constraints.txt")
-dict = parse_pref("./demo_studentprefs.txt")
+professors, rooms, times = parse_classTimes("./demo_constraints1.txt")
+dict = parse_pref("./demo_studentprefs1.txt")
 students = dict.keys()
-classes = count_class_size(parse_pref("./demo_studentprefs.txt"))
+classes = count_class_size(parse_pref("./demo_studentprefs1.txt"))
+print (classes)
 rooms = sort_room_cap(rooms)
 schedule, position = scheduling(classes, students, professors, times, rooms)
 print(test_result(students, dict, schedule, position))
