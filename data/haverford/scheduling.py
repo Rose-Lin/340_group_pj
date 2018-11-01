@@ -34,7 +34,8 @@ def haverford_parse_prof_rooms_times_class(file):
             tokenizes = lines[i].split('\t')
             class_id = int(tokenizes[0])
             # TODO: this is not considering the labs
-            if tokenizes[1]:
+            #if tokenizes[1]:
+            if tokenizes[1].isdigit():
                 prof_id = int(tokenizes[1])
                 profs[class_id] = prof_id
     return profs, rooms, time_slots
@@ -102,7 +103,7 @@ def scheduling(classes, students, professors, times, rooms):
             for ava_r in range(len( ava_rooms)):
                 if ava_rooms[ava_r] > 0:
                     room_id = ava_r + 1
-            print(room_id)
+            #print(room_id)
             for row in range (len(Schedule)):
                 if Schedule[row][room_id-1] == 0:
                     t = row
@@ -127,7 +128,7 @@ def find_valid_room(Schedule, threshold, rooms, professors, class_id):
             t = empty_timeslot(Schedule, room_id, professors, class_id)
             if not t == None:
                 break
-    #print(t, room_id)
+    print(t, room_id)
     return room_id, t, capacity
 
 def empty_timeslot(Schedule, room_id, professors, class_id):
@@ -159,9 +160,9 @@ def test_result(S, Pref, Schedule, Position):
                 count += 1
     return (float(count)/total)
 
-professors, rooms, times = haverford_parse_prof_rooms_times_class("../haverford/haverfordConstraints.txt")
+professors, rooms, times = haverford_parse_prof_rooms_times_class("./haverfordConstraints.txt")
 times = haverford_reconstruct_time_slots(times)
-pref_dict = haverford_parse_pref("../haverford/haverfordStudentPrefs.txt")
+pref_dict = haverford_parse_pref("./haverfordStudentPrefs.txt")
 students = pref_dict.keys()
 classes = count_class_size(pref_dict)
 # print (classes)
