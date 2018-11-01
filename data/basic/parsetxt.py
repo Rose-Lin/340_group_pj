@@ -107,14 +107,12 @@ def scheduling(classes, students, professors, times, rooms):
             # Corner cases: when a specific room has very small capacity, so that the current class c cannot fit in any time of this room, and other rooms are all filled also.
             for ava_r in range(len(ava_rooms)):
                 if ava_rooms[ava_r] > 0:
-                    # room_id = ava_r + 1
                     index = ava_r
             for row in range (len(Schedule)):
                 if Schedule[row][index] == 0:
                     t = row
                     break
         ava_rooms[index] -= 1
-        # Schedule[t][room_id-1] = class_id
         Schedule[t][index] = class_id
         room_id = room_index_dict[index][0]
         room_dict[class_id] = (t+1,room_id)
@@ -199,7 +197,6 @@ def write_schedule_to_file(s_in_c, prof, room_dict, schedule, file):
     f = open(file, 'w')
     f.write("Course\tRoom\tTeacher\tTime\tStudents\n")
     for c in s_in_c:
-        # print(c)
         f.write(str(c)+ "\t")
         #f.write("\t")
         f.write(str(room_dict[c][1]) + "\t")
@@ -211,17 +208,19 @@ def write_schedule_to_file(s_in_c, prof, room_dict, schedule, file):
         f.write("\n")
     f.close()
 
-if len(sys.argv) < 2:
-    print("Please run as <python3> <script> <outputfilename>")
+if len(sys.argv) != 4:
+    print("Usage: " + sys.argv[0] + " <constraints.txt> <student_prefs.txt> <schedule.txt>")
     exit(1)
-professors, rooms, times = parse_classTimes("./demo_constraints1.txt")
-dict = parse_pref("./demo_studentprefs1.txt")
+constraints = sys.argv[1]
+prefs = sys.argv[2]
+professors, rooms, times = parse_classTimes(constraints)
+dict = parse_pref(prefs)
 students = dict.keys()
-classes = count_class_size(parse_pref("./demo_studentprefs1.txt"))
+classes = count_class_size(parse_pref(prefs))
 print (classes)
 rooms = sort_room_cap(rooms)
 schedule, position, room_dict = scheduling(classes, students, professors, times, rooms)
 s_in_c = get_students_in_class(dict, room_dict)
 #print(room_dict)
-write_schedule_to_file(s_in_c, professors, room_dict, schedule, sys.argv[1])
+write_schedule_to_file(s_in_c, professors, room_dict, schedule, sys.argv[3])
 print(test_result(students, dict, schedule, position))
