@@ -83,55 +83,71 @@ def get_students_in_class(pref_dict, room_dict):
 # classes is a list of clsses from count_class_size(), so it should be sorted by popularity already
 # rooms should also be sorted list in increasing order of capacity (room_id, cap)
 def scheduling(classes, students, professors, times, rooms):
+    print(rooms)
     Schedule = [[0 for y in rooms] for x in times]
+    room_index_dict = {}
+    index = 0
+    for room in rooms:
+        room_index_dict[index] = room
+        index += 1
+    print(room_index_dict)
     # a list of indecis of classes in the Schedule
     Position = [0]*len(classes)
+    # room_dict is a dictrionary keyed with class id and (time slot,room id) in the schedule as value
     room_dict = {}
+    # available rooms
     ava_rooms = [len(times)]*len(rooms)
     for pair in  classes:
         class_id = pair[0]
         popularity = pair[1]
-        room_id = 0
-        room_id, t, cap = find_valid_room(Schedule, popularity, rooms, professors, class_id)
+        # room_id = 0
+        index, t, cap = find_valid_room(Schedule, popularity, room_index_dict, professors, class_id)
+        # room_id, t, cap = find_valid_room(Schedule, popularity, rooms, professors, class_id)
         if t == None:
             # Corner cases: when a specific room has very small capacity, so that the current class c cannot fit in any time of this room, and other rooms are all filled also.
-            for ava_r in range(len( ava_rooms)):
+            for ava_r in range(len(ava_rooms)):
                 if ava_rooms[ava_r] > 0:
-                    room_id = ava_r + 1
-            #print(room_id)
+                    index = ava_r
             for row in range (len(Schedule)):
-                if Schedule[row][room_id-1] == 0:
+                if Schedule[row][index] == 0:
                     t = row
                     break
-        ava_rooms[room_id-1] -= 1
-        Schedule[t][room_id-1] = class_id
+        ava_rooms[index] -= 1
+        Schedule[t][index] = class_id
+        room_id = room_index_dict[index][0]
         room_dict[class_id] = (t+1,room_id)
-        Position[class_id-1] = (t,room_id-1)
+        Position[class_id-1] = (t,index)
     print("----------Schedule-----------")
     print (Schedule)
     print("-----------Position-----------")
     print(Position)
+    print('-----------Room dict--------')
+    print(room_dict)
     return Schedule, Position, room_dict
 
-def find_valid_room(Schedule, threshold, rooms, professors, class_id):
+def find_valid_room(Schedule, threshold, room_index_dict, professors, class_id):
     room_id = 0
     t = 0
     capacity = 0
-    for rid, cap in rooms:
+    total_rooms = len(rooms)
+    # for rid, cap in room_index_dict:
+    for index, room in room_index_dict.items():
+        rid = room[0]
+        cap = room[1]
         if cap >= threshold:
             room_id = rid
             capacity = cap
-            t = empty_timeslot(Schedule, room_id, professors, class_id)
+            t = empty_timeslot(Schedule, room_id, professors, class_id, index)
             if not t == None:
                 break
     #print(t, room_id)
-    return room_id, t, capacity
+    return index, t, capacity
 
-def empty_timeslot(Schedule, room_id, professors, class_id):
+def empty_timeslot(Schedule, room_id, professors, class_id, index):
     for row in range (len( Schedule)):
         Prof = []
-        if Schedule[row][room_id-1] == 0:
-            for i in range (0,room_id-1,1):
+        if Schedule[row][index] == 0:
+            for i in range (0,index,1):
                 Prof.append(professors[Schedule[row][i]-1])
             if not professors[class_id-1] in Prof:
                 return row
@@ -181,7 +197,6 @@ def write_schedule_to_file(s_in_c, prof, room_dict, schedule, file):
     f = open(file, 'w')
     f.write("Course\tRoom\tTeacher\tTime\tStudents\n")
     for c in s_in_c:
-        #print(c)
         f.write(str(c)+ "\t")
         #f.write("\t")
         f.write(str(room_dict[c][1]) + "\t")
@@ -193,13 +208,11 @@ def write_schedule_to_file(s_in_c, prof, room_dict, schedule, file):
         f.write("\n")
     f.close()
 
-
 if len(sys.argv) != 4:
     print("Usage: " + sys.argv[0] + " <constraints.txt> <student_prefs.txt> <schedule.txt>")
     exit(1)
 constraints = sys.argv[1]
 prefs = sys.argv[2]
-
 professors, rooms, times = parse_classTimes(constraints)
 dict = parse_pref(prefs)
 students = dict.keys()
