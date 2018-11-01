@@ -34,8 +34,7 @@ def haverford_parse_prof_rooms_times_class(file):
             tokenizes = lines[i].split('\t')
             class_id = int(tokenizes[0])
             # TODO: this is not considering the labs
-            #if tokenizes[1]:
-            if tokenizes[1].isdigit():
+            if tokenizes[1]:
                 prof_id = int(tokenizes[1])
                 profs[class_id] = prof_id
     return profs, rooms, time_slots
@@ -89,57 +88,78 @@ def count_class_size(pref_dict):
 # classes is a list of clsses from count_class_size(), so it should be sorted by popularity already
 # rooms should also be sorted list in increasing order of capacity (room_id, cap)
 def scheduling(classes, students, professors, times, rooms):
+    print(rooms)
     Schedule = [[0 for y in rooms] for x in times]
-    # a list of indecis of classes in the Schedule
-    Position = [0]*len(classes)
+    room_index_dict = {}
+    index = 0
+    for room in rooms:
+        room_index_dict[index] = room
+        index += 1
+    print(room_index_dict)
+    # Position is a dict keyed with class id
+    Position = {}
+    # room_dict is a dictrionary keyed with class id and (time slot,room id) in the schedule as value
+    room_dict = {}
+    # available rooms
     ava_rooms = [len(times)]*len(rooms)
     for pair in  classes:
         class_id = pair[0]
         popularity = pair[1]
-        room_id = 0
-        room_id, t, cap = find_valid_room(Schedule, popularity, rooms, professors, class_id)
+        # room_id = 0
+        index, t, cap = find_valid_room(Schedule, popularity, room_index_dict, professors, class_id)
+        # room_id, t, cap = find_valid_room(Schedule, popularity, rooms, professors, class_id)
         if t == None:
             # Corner cases: when a specific room has very small capacity, so that the current class c cannot fit in any time of this room, and other rooms are all filled also.
-            for ava_r in range(len( ava_rooms)):
+            for ava_r in range(len(ava_rooms)):
                 if ava_rooms[ava_r] > 0:
-                    room_id = ava_r + 1
-            #print(room_id)
+                    index = ava_r
             for row in range (len(Schedule)):
-                if Schedule[row][room_id-1] == 0:
+                if Schedule[row][index] == 0:
                     t = row
                     break
-        ava_rooms[room_id-1] -= 1
-        Schedule[t][room_id-1] = class_id
-        Position[class_id-1] = (t,room_id-1)
+        ava_rooms[index] -= 1
+        Schedule[t][index] = class_id
+        room_id = room_index_dict[index][0]
+        room_dict[class_id] = (t+1,room_id)
+        Position[class_id] = (t,index)
     print("----------Schedule-----------")
     print (Schedule)
     print("-----------Position-----------")
     print(Position)
-    return Schedule, Position
+    print('-----------Room dict--------')
+    print(room_dict)
+    return Schedule, Position, room_dict
 
-def find_valid_room(Schedule, threshold, rooms, professors, class_id):
+def find_valid_room(Schedule, threshold, room_index_dict, professors, class_id):
     room_id = 0
     t = 0
     capacity = 0
-    for rid, cap in rooms:
+    total_rooms = len(rooms)
+    # for rid, cap in room_index_dict:
+    for index, room in room_index_dict.items():
+        rid = room[0]
+        cap = room[1]
         if cap >= threshold:
             room_id = rid
             capacity = cap
-            t = empty_timeslot(Schedule, room_id, professors, class_id)
+            t = empty_timeslot(Schedule, room_id, professors, class_id, index)
             if not t == None:
                 break
-    print(t, room_id)
-    return room_id, t, capacity
+    #print(t, room_id)
+    return index, t, capacity
 
-def empty_timeslot(Schedule, room_id, professors, class_id):
+def empty_timeslot(Schedule, room_id, professors, class_id, index):
     for row in range (len( Schedule)):
         Prof = []
-        if Schedule[row][room_id-1] == 0:
-            for i in range (0,room_id-1,1):
-                Prof.append(professors[Schedule[row][i]-1])
+        if Schedule[row][index] == 0:
+            for i in range (0,index,1):
+                c_id = Schedule[row][i]
+                if c_id > 0:
+                    Prof.append(professors[c_id])
             if not professors[class_id-1] in Prof:
                 return row
     return None
+
 
 def sort_room_cap(Class_list):
     Class_list.sort(key = lambda x: x[1])
@@ -160,9 +180,10 @@ def test_result(S, Pref, Schedule, Position):
                 count += 1
     return (float(count)/total)
 
-professors, rooms, times = haverford_parse_prof_rooms_times_class("./haverfordConstraints.txt")
+professors, rooms, times = haverford_parse_prof_rooms_times_class("../haverford/haverfordConstraints.txt")
+print(professors)
 times = haverford_reconstruct_time_slots(times)
-pref_dict = haverford_parse_pref("./haverfordStudentPrefs.txt")
+pref_dict = haverford_parse_pref("../haverford/haverfordStudentPrefs.txt")
 students = pref_dict.keys()
 classes = count_class_size(pref_dict)
 # print (classes)
