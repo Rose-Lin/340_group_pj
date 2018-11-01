@@ -9,7 +9,6 @@ def parse_classTimes(file):
         total_time_slots = int(table[0].split('\t')[1])
         total_rooms = int(table[1].split('\t')[1])
         # class_line is the line number of the start of the classes
-        # class_line = max(total_rooms, total_time_slots)
         class_line = total_rooms
         total_classes = table[2+class_line]
         # total is the total number of classes
