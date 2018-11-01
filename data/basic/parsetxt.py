@@ -67,12 +67,26 @@ def count_class_size(pref_dict):
     # print(n)
     return n
 
+def get_students_in_class(pref_dict, room_dict):
+    students = {}
+    for s in pref_dict:
+        times = []
+        for c in pref_dict[s]:
+            if room_dict[c][0] not in times:
+                times.append(room_dict[c][0])
+                if c in students:
+                    students[c].append(s)
+                else:
+                    students[c] = [s]
+    return students
+
 # classes is a list of clsses from count_class_size(), so it should be sorted by popularity already
 # rooms should also be sorted list in increasing order of capacity (room_id, cap)
 def scheduling(classes, students, professors, times, rooms):
     Schedule = [[0 for y in rooms] for x in times]
     # a list of indecis of classes in the Schedule
     Position = [0]*len(classes)
+    room_dict = {}
     ava_rooms = [len(times)]*len(rooms)
     for pair in  classes:
         class_id = pair[0]
@@ -91,12 +105,13 @@ def scheduling(classes, students, professors, times, rooms):
                     break
         ava_rooms[room_id-1] -= 1
         Schedule[t][room_id-1] = class_id
+        room_dict[class_id] = (t+1,room_id)
         Position[class_id-1] = (t,room_id-1)
     print("----------Schedule-----------")
     print (Schedule)
     print("-----------Position-----------")
     print(Position)
-    return Schedule, Position
+    return Schedule, Position, room_dict
 
 def find_valid_room(Schedule, threshold, rooms, professors, class_id):
     room_id = 0
@@ -162,7 +177,30 @@ def edgeWeights(dict):
     # print(len(weight))
     return weight
 
-# professors, rooms, times = parse_classTimes("./demo_constraints.txt")
-# dict = parse_pref("./demo_studentprefs.txt")
-# students = dict.keys()
-# classes = count_class_size(parse_pref("./demo_studentprefs.txt"))
+def write_schedule_to_file(s_in_c, prof, room_dict, schedule, file):
+    f = open(file, 'w')
+    f.write("Course\tRoom\tTeacher\tTime\tStudents\n")
+    for c in s_in_c:
+        print(c)
+        f.write(str(c)+ "\t")
+        #f.write("\t")
+        f.write(str(room_dict[c][1]) + "\t")
+        #print(room_dict[c])
+        f.write(str(prof[c-1]) + "\t")
+        f.write(str(room_dict[c][0]) + "\t")
+        f.write(''.join(str(e) + " " for e in s_in_c[c]))
+        #print(s_in_c[c])
+        f.write("\n")
+    f.close()
+
+professors, rooms, times = parse_classTimes("./demo_constraints.txt")
+dict = parse_pref("./demo_studentprefs.txt")
+students = dict.keys()
+classes = count_class_size(parse_pref("./demo_studentprefs.txt"))
+print (classes)
+rooms = sort_room_cap(rooms)
+schedule, position, room_dict = scheduling(classes, students, professors, times, rooms)
+s_in_c = get_students_in_class(dict, room_dict)
+#print(room_dict)
+write_schedule_to_file(s_in_c, professors, room_dict, schedule, sys.argv[1])
+print(test_result(students, dict, schedule, position))
