@@ -199,7 +199,7 @@ def test_result(S, Pref, Schedule, Position):
             if final_pick[t] == 0:
                 final_pick[t] = c
                 count += 1
-    return float(count)/total
+    return (float(count)/total)
 
 def edgeWeights(dict):
     weight = {}
@@ -232,4 +232,3 @@ pref_dict = haverford_parse_pref("../haverford/haverfordStudentPrefs.txt")
 # rooms = sort_room_cap(rooms)
 # schedule, position = scheduling(classes, students, professors, times, rooms)
 # print(test_result(students, dict, schedule, position))
-#edgeWeights(dict)
