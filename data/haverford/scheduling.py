@@ -30,6 +30,8 @@ def haverford_parse_prof_rooms_times_class(file):
         total_teachers = int(lines[class_line_num+1].split('\t')[1])
         # profs is a dictrionary, with keys as class id and professors id as value
         profs = {}
+        # haverford classes excluding labs and bmc classes
+        hc_classes = []
         for i in range(class_line_num+2, class_line_num+total_classes+2):
             tokenizes = lines[i].split('\t')
             class_id = int(tokenizes[0])
@@ -37,7 +39,8 @@ def haverford_parse_prof_rooms_times_class(file):
             if tokenizes[1]:
                 prof_id = int(tokenizes[1])
                 profs[class_id] = prof_id
-    return profs, rooms, time_slots
+                hc_classes.append(class_id)
+    return profs, rooms, time_slots, hc_classes
 
 def get_time_slot_dict(start_time, end_time, days, time_slots):
     for day in days:
@@ -87,15 +90,15 @@ def count_class_size(pref_dict):
 
 # classes is a list of clsses from count_class_size(), so it should be sorted by popularity already
 # rooms should also be sorted list in increasing order of capacity (room_id, cap)
-def scheduling(classes, students, professors, times, rooms):
-    print(rooms)
+def scheduling(classes, students, professors, times, rooms, hc_classes):
+    # print(rooms)
     Schedule = [[0 for y in rooms] for x in times]
     room_index_dict = {}
     index = 0
     for room in rooms:
         room_index_dict[index] = room
         index += 1
-    print(room_index_dict)
+    # print(room_index_dict)
     # Position is a dict keyed with class id
     Position = {}
     # room_dict is a dictrionary keyed with class id and (time slot,room id) in the schedule as value
@@ -104,6 +107,8 @@ def scheduling(classes, students, professors, times, rooms):
     ava_rooms = [len(times)]*len(rooms)
     for pair in  classes:
         class_id = pair[0]
+        if not class_id in hc_classes:
+            continue
         popularity = pair[1]
         # room_id = 0
         index, t, cap = find_valid_room(Schedule, popularity, room_index_dict, professors, class_id)
@@ -126,8 +131,8 @@ def scheduling(classes, students, professors, times, rooms):
     print (Schedule)
     print("-----------Position-----------")
     print(Position)
-    print('-----------Room dict--------')
-    print(room_dict)
+    # print('-----------Room dict--------')
+    # print(room_dict)
     return Schedule, Position, room_dict
 
 def find_valid_room(Schedule, threshold, room_index_dict, professors, class_id):
@@ -156,7 +161,7 @@ def empty_timeslot(Schedule, room_id, professors, class_id, index):
                 c_id = Schedule[row][i]
                 if c_id > 0:
                     Prof.append(professors[c_id])
-            if not professors[class_id-1] in Prof:
+            if not professors[class_id] in Prof:
                 return row
     return None
 
@@ -174,19 +179,18 @@ def test_result(S, Pref, Schedule, Position):
         total += len(Pref[s])
         final_pick = [0] * (len(Schedule)+1)
         for c in Pref[s]:
-            t = Position[c-1][0]
-            if final_pick[t] == 0:
-                final_pick[t] = c
-                count += 1
+            if c in Position:
+                t = Position[c][0]
+                if final_pick[t] == 0:
+                    final_pick[t] = c
+                    count += 1
     return (float(count)/total)
 
-professors, rooms, times = haverford_parse_prof_rooms_times_class("../haverford/haverfordConstraints.txt")
-print(professors)
+professors, rooms, times, hc_classes = haverford_parse_prof_rooms_times_class("../haverford/haverfordConstraints.txt")
 times = haverford_reconstruct_time_slots(times)
 pref_dict = haverford_parse_pref("../haverford/haverfordStudentPrefs.txt")
 students = pref_dict.keys()
 classes = count_class_size(pref_dict)
-# print (classes)
 rooms = sort_room_cap(rooms)
-schedule, position = scheduling(classes, students, professors, times, rooms)
-print(test_result(students, dict, schedule, position))
+schedule, position, room_dict = scheduling(classes, students, professors, times, rooms, hc_classes)
+print(test_result(students, pref_dict, schedule, position))
