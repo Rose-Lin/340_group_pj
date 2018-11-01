@@ -2,6 +2,7 @@ import sys
 import operator
 
 def parse_classTimes(file):
+    """" A function used on basic data, returns professors list, rooms list and time slots list"""
     with open (file) as f:
         raw_content = f.read().strip()
         table = raw_content.split('\n')
@@ -40,6 +41,7 @@ def parse_classTimes(file):
     return professors, rooms, time_slots
 
 def haverford_parse_prof_rooms_times_class(file):
+    """" A function used on haverford data, returns professors list, rooms list and time slots list"""
     with open(file) as f:
         raw_content =  f.read().strip()
         lines = raw_content.split('\n')
@@ -86,6 +88,7 @@ def get_time_slot_dict(start_time, end_time, days, time_slots):
     return time_slots
 
 def parse_pref(file):
+    """" A function used on basic data, returns student's pre dict, with student id as keys and pref list as value."""
     dict = {}
     with open(file) as f:
         raw_content = f.read()
@@ -96,6 +99,19 @@ def parse_pref(file):
             pref_list = [int(x) for x in pref_list_line.split()]
             dict[student_id] = pref_list
     return dict
+
+def haverford_parse_pref(file):
+    """" A function used on haverford data, returns professors students pref dict"""
+    pref_dict = {}
+    with open(file) as f:
+        raw_content = f.read().strip()
+        lines = raw_content.split('\n')
+        total_student_num = int(lines[0].split('\t')[1])
+        for i in range(1, 1+total_student_num):
+            student_id = int(lines[i].split('\t')[0])
+            pref_list_line = lines[i].split('\t')[1]
+            pref_dict[student_id] = [int(x) for x in pref_list_line.split()]
+    return pref_dict
 
 def count_class_size(pref_dict):
     sizes = {}
@@ -209,8 +225,8 @@ def edgeWeights(dict):
 
 # professors, rooms, times = parse_classTimes("./demo_constraints.txt")
 professors, rooms, times = haverford_parse_prof_rooms_times_class("../haverford/haverfordConstraints.txt")
-print(professors)
 # dict = parse_pref("./demo_studentprefs.txt")
+pref_dict = haverford_parse_pref("../haverford/haverfordStudentPrefs.txt")
 # students = dict.keys()
 # classes = count_class_size(parse_pref("./demo_studentprefs.txt"))
 # print (classes)
