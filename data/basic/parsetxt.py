@@ -1,23 +1,27 @@
 import sys
 import operator
 
-def parse_classTimes(file):    
+def parse_classTimes(file):
     with open (file) as f:
-        raw_content = f.read()
-        lines = raw_content.splitlines(True)[2:6]
-        teachers_lines = raw_content.splitlines(True)[8:]
-        total_classes = raw_content.splitlines(True)[6]
+        raw_content = f.read().strip()
+        table = raw_content.split('\n')
+        total_time_slots = int(table[0].split('\t')[1])
+        total_rooms = int(table[1].split('\t')[1])
+        # class_line is the line number of the start of the classes
+        class_line = max(total_rooms, total_time_slots)
+        total_classes = table[2+class_line]
+        # total is the total number of classes
         total = int(total_classes.split('\t')[1])
-        total_rooms = int(raw_content.splitlines(True)[1].split('\t')[1])
-        total_time_slots = int(raw_content.splitlines(True)[0].split('\t')[1])
-    # a list of professors indexed by the class id
+        teachers_classes_lines = table[4+class_line:]
+        rooms_times_lines = table[2:2+class_line]
+    # a list of professors indexed by the class id, class id starts from 0
     professors = [0]*total
     classes = [0]*total
-    # 1 indexing
+    # 1 indexing, room id starts from 1
     rooms = []
-    # 0 indexing
+    # 0 indexing, time slot id starts from 0
     time_slots = []
-    for line in lines:
+    for line in rooms_times_lines:
         tokens = line.split('\t')
         class_time = int(tokens[0])
         room = int(tokens[1])
@@ -25,7 +29,7 @@ def parse_classTimes(file):
         #print("class_time: {}---room:{}".format(class_time, room))
         time_slots.append(class_time-1)
         rooms.append((room_id, room))
-    for line in teachers_lines:
+    for line in teachers_classes_lines:
         tokens = line.split('\t')
         class_num = int(tokens[0])
         teachers = int(tokens[1])
@@ -104,7 +108,7 @@ def find_valid_room(Schedule, threshold, rooms, professors, class_id):
             if not t == None:
                 break
     #print(t, room_id)
-    return room_id, t, capacity 
+    return room_id, t, capacity
 
 def empty_timeslot(Schedule, room_id, professors, class_id):
     for row in range (len( Schedule)):
@@ -115,13 +119,13 @@ def empty_timeslot(Schedule, room_id, professors, class_id):
             if not professors[class_id-1] in Prof:
                 return row
     return None
-    
+
 def sort_room_cap(Class_list):
     Class_list.sort(key = lambda x: x[1])
     # Class_list.reverse()
     #print (Class_list)
     return Class_list
-    
+
 def test_result(S, Pref, Schedule, Position):
     count = 0
     total = 0
