@@ -8,7 +8,6 @@ def parse_classTimes(file):
         total_time_slots = int(table[0].split('\t')[1])
         total_rooms = int(table[1].split('\t')[1])
         # class_line is the line number of the start of the classes
-        # class_line = max(total_rooms, total_time_slots)
         class_line = total_rooms
         total_classes = table[2+class_line]
         # total is the total number of classes
@@ -184,7 +183,7 @@ def test_result(S, Pref, Schedule, Position):
             if final_pick[t] == 0:
                 final_pick[t] = c
                 count += 1
-    return float(count)/total
+    return (float(count)/total)
 
 def edgeWeights(dict):
     weight = {}
@@ -207,9 +206,9 @@ def edgeWeights(dict):
     # print(len(weight))
     return weight
 
+
 # professors, rooms, times = parse_classTimes("./demo_constraints.txt")
 professors, rooms, times = haverford_parse_prof_rooms_times_class("../haverford/haverfordConstraints.txt")
-print(professors)
 # dict = parse_pref("./demo_studentprefs.txt")
 # students = dict.keys()
 # classes = count_class_size(parse_pref("./demo_studentprefs.txt"))
@@ -217,4 +216,3 @@ print(professors)
 # rooms = sort_room_cap(rooms)
 # schedule, position = scheduling(classes, students, professors, times, rooms)
 # print(test_result(students, dict, schedule, position))
-#edgeWeights(dict)
