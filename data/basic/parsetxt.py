@@ -8,7 +8,8 @@ def parse_classTimes(file):
         total_time_slots = int(table[0].split('\t')[1])
         total_rooms = int(table[1].split('\t')[1])
         # class_line is the line number of the start of the classes
-        class_line = max(total_rooms, total_time_slots)
+        # class_line = max(total_rooms, total_time_slots)
+        class_line = total_rooms
         total_classes = table[2+class_line]
         # total is the total number of classes
         total = int(total_classes.split('\t')[1])
@@ -37,6 +38,52 @@ def parse_classTimes(file):
         classes [class_num-1] = class_num
         professors[class_num-1] = teachers
     return professors, rooms, time_slots
+
+def haverford_parse_prof_rooms_times_class(file):
+    with open(file) as f:
+        raw_content =  f.read().strip()
+        lines = raw_content.split('\n')
+        total_time_slots = int(lines[0].split('\t')[1])
+        time_slots = {}
+        for i in range(1, total_time_slots+1):
+            times = lines[i].split('\t')[1].split()
+            start_time = times[0]+times[1]
+            end_time = times[2]+times[3]
+            days = times[4:]
+            # time_slots is a dictrionary with each day of the week as key and the [(start_time, end_time)] as value
+            time_slots = get_time_slot_dict(start_time, end_time, days, time_slots)
+        # room_line_num is the line of which the information about rooms starts
+        room_line_num = 1+total_time_slots
+        total_rooms = int(lines[room_line_num].split('\t')[1])
+        # rooms is a list of tuples [(room_name, cap)]
+        rooms = []
+        for i in range(1+room_line_num, 1+room_line_num+total_rooms):
+            room_name = lines[i].split('\t')[0]
+            cap = lines[i].split('\t')[1]
+            rooms.append((room_name, cap))
+        # class_line_num is the line of which the information about classes and teachers starts
+        class_line_num = 1+room_line_num+total_rooms
+        total_classes = int(lines[class_line_num].split('\t')[1])
+        total_teachers = int(lines[class_line_num+1].split('\t')[1])
+        # profs is a dictrionary, with keys as class id and professors id as value
+        profs = {}
+        for i in range(class_line_num+2, class_line_num+total_classes+2):
+            tokenizes = lines[i].split('\t')
+            class_id = int(tokenizes[0])
+            # TODO: this is not considering the labs
+            if tokenizes[1]:
+                prof_id = int(tokenizes[1])
+                profs[class_id] = prof_id
+    return profs, rooms, time_slots
+
+def get_time_slot_dict(start_time, end_time, days, time_slots):
+    for day in days:
+        if day in time_slots.keys():
+            if (start_time, end_time) not in time_slots[day]:
+                time_slots[day].append((start_time, end_time))
+        else:
+            time_slots[day] = [(start_time, end_time)]
+    return time_slots
 
 def parse_pref(file):
     dict = {}
@@ -137,7 +184,7 @@ def test_result(S, Pref, Schedule, Position):
             if final_pick[t] == 0:
                 final_pick[t] = c
                 count += 1
-    return (count/total)
+    return float(count)/total
 
 def edgeWeights(dict):
     weight = {}
@@ -160,12 +207,14 @@ def edgeWeights(dict):
     # print(len(weight))
     return weight
 
-professors, rooms, times = parse_classTimes("./demo_constraints1.txt")
-dict = parse_pref("./demo_studentprefs1.txt")
-students = dict.keys()
-classes = count_class_size(parse_pref("./demo_studentprefs1.txt"))
-print (classes)
-rooms = sort_room_cap(rooms)
-schedule, position = scheduling(classes, students, professors, times, rooms)
-print(test_result(students, dict, schedule, position))
+# professors, rooms, times = parse_classTimes("./demo_constraints.txt")
+professors, rooms, times = haverford_parse_prof_rooms_times_class("../haverford/haverfordConstraints.txt")
+print(professors)
+# dict = parse_pref("./demo_studentprefs.txt")
+# students = dict.keys()
+# classes = count_class_size(parse_pref("./demo_studentprefs.txt"))
+# print (classes)
+# rooms = sort_room_cap(rooms)
+# schedule, position = scheduling(classes, students, professors, times, rooms)
+# print(test_result(students, dict, schedule, position))
 #edgeWeights(dict)

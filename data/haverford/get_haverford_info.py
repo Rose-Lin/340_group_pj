@@ -52,7 +52,7 @@ def get_student_prefs_enrolled(list_of_dicts):
 
 def get_courses(list_of_dicts):
   courses = {}
-  for dict in list_of_dicts: 
+  for dict in list_of_dicts:
     course = dict["Course ID"]
     campus = dict["College"]
     if not course in courses and campus == "H":
@@ -71,7 +71,7 @@ def get_prof_courses(list_of_dicts):
           profs[prof].append(course)
       else:
         profs[prof] = [course]
-  return profs 
+  return profs
 
 def get_class_times(list_of_dicts):
   times = []
@@ -147,12 +147,12 @@ def write_rooms_to_file(list_of_dicts, f):
 
 def write_num_classes_to_file(list_of_dicts, f):
   num_classes = len(get_courses(list_of_dicts))
-  f.write("Classes\t" + str(num_classes) + "\n") 
+  f.write("Classes\t" + str(num_classes) + "\n")
 
 def write_teachers_to_file(list_of_dicts, f):
   prof_courses = get_prof_courses(list_of_dicts)
   num_profs = len(prof_courses)
-  courses = get_courses(list_of_dicts)  
+  courses = get_courses(list_of_dicts)
   f.write("Teachers\t" + str(num_profs) + "\n")
   for course in courses:
     f.write(course + "\t")
@@ -168,8 +168,8 @@ def write_constraints_to_file(list_of_dicts, filename):
   f.close()
 
 if len(sys.argv) != 4:
-  print "Usage: " + sys.argv[0] + " <enrollment.csv> <student_prefs.txt> <constraints.txt>"
-  exit(1) 
+  print ("Usage: " + sys.argv[0] + " <enrollment.csv> <student_prefs.txt> <constraints.txt>")
+  exit(1)
 list_of_dicts = get_data_list_of_dicts(sys.argv[1])
 write_prefs_to_file(list_of_dicts, sys.argv[2])
 write_constraints_to_file(list_of_dicts, sys.argv[3])
