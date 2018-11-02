@@ -184,6 +184,8 @@ def test_result(S, Pref, Schedule, Position):
                 if final_pick[t] == 0:
                     final_pick[t] = c
                     count += 1
+            else:
+                total -= 1
     return (float(count)/total)
 
 professors, rooms, times, hc_classes = haverford_parse_prof_rooms_times_class("../haverford/haverfordConstraints.txt")
