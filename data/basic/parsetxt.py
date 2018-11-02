@@ -1,4 +1,5 @@
 import sys
+import time
 import operator
 
 def parse_classTimes(file):
@@ -213,6 +214,7 @@ if len(sys.argv) != 4:
     exit(1)
 constraints = sys.argv[1]
 prefs = sys.argv[2]
+start = time.time()
 professors, rooms, times = parse_classTimes(constraints)
 dict = parse_pref(prefs)
 students = dict.keys()
@@ -220,7 +222,9 @@ classes = count_class_size(parse_pref(prefs))
 print (classes)
 rooms = sort_room_cap(rooms)
 schedule, position, room_dict = scheduling(classes, students, professors, times, rooms)
+end = time.time()
 s_in_c = get_students_in_class(dict, room_dict)
 #print(room_dict)
 write_schedule_to_file(s_in_c, professors, room_dict, schedule, sys.argv[3])
 print(test_result(students, dict, schedule, position))
+print("runtime: {}".format(end-start))
