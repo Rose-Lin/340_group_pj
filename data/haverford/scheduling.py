@@ -1,4 +1,5 @@
 import sys
+import time
 import operator
 
 def haverford_parse_prof_rooms_times_class(file):
@@ -188,6 +189,7 @@ def test_result(S, Pref, Schedule, Position):
                 total -= 1
     return (float(count)/total)
 
+start = time.time()
 professors, rooms, times, hc_classes = haverford_parse_prof_rooms_times_class("../haverford/haverfordConstraints.txt")
 times = haverford_reconstruct_time_slots(times)
 pref_dict = haverford_parse_pref("../haverford/haverfordStudentPrefs.txt")
@@ -195,4 +197,6 @@ students = pref_dict.keys()
 classes = count_class_size(pref_dict)
 rooms = sort_room_cap(rooms)
 schedule, position, room_dict = scheduling(classes, students, professors, times, rooms, hc_classes)
+end = time.time()
 print(test_result(students, pref_dict, schedule, position))
+print("runtime: {}".format(end-start))
