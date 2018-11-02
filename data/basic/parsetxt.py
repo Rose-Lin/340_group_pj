@@ -28,13 +28,11 @@ def parse_classTimes(file):
         class_time = int(tokens[0])
         room = int(tokens[1])
         room_id = int(tokens[0])
-        #print("class_time: {}---room:{}".format(class_time, room))
         rooms.append((room_id, room))
     for line in teachers_classes_lines:
         tokens = line.split('\t')
         class_num = int(tokens[0])
         teachers = int(tokens[1])
-        # print("class_num: {}---teachers: {}".format(class_num, teachers))
         classes [class_num-1] = class_num
         professors[class_num-1] = teachers
     return professors, rooms, time_slots
@@ -64,7 +62,6 @@ def count_class_size(pref_dict):
     # content in n: (class id, popularity)
     n = sorted(sizes.items(), key=operator.itemgetter(1))
     n.reverse()
-    # print(n)
     return n
 
 def get_students_in_class(pref_dict, room_dict):
@@ -98,9 +95,7 @@ def scheduling(classes, students, professors, times, rooms):
     for pair in  classes:
         class_id = pair[0]
         popularity = pair[1]
-        # room_id = 0
         index, t, cap = find_valid_room(Schedule, popularity, room_index_dict, professors, class_id)
-        # room_id, t, cap = find_valid_room(Schedule, popularity, rooms, professors, class_id)
         if t == None:
             print('correct')
             print(Schedule)
@@ -140,7 +135,6 @@ def find_valid_room(Schedule, threshold, room_index_dict, professors, class_id):
             t = empty_timeslot(Schedule, room_id, professors, class_id, index)
             if not t == None:
                 break
-    #print(t, room_id)
     return index, t, capacity
 
 def empty_timeslot(Schedule, room_id, professors, class_id, index):
@@ -155,8 +149,6 @@ def empty_timeslot(Schedule, room_id, professors, class_id, index):
 
 def sort_room_cap(Class_list):
     Class_list.sort(key = lambda x: x[1])
-    # Class_list.reverse()
-    #print (Class_list)
     return Class_list
 
 def test_result(S, Pref, Schedule, Position):
@@ -186,11 +178,8 @@ def edgeWeights(dict):
                     weight[key] += 1
                 else:
                     weight[key] = 1
-    # print(weight)
     n = sorted(weight.items(), key=operator.itemgetter(1))
     n.reverse()
-    # print(n)
-    # print(len(weight))
     return weight
 
 def write_schedule_to_file(s_in_c, prof, room_dict, schedule, file):
@@ -198,13 +187,10 @@ def write_schedule_to_file(s_in_c, prof, room_dict, schedule, file):
     f.write("Course\tRoom\tTeacher\tTime\tStudents\n")
     for c in s_in_c:
         f.write(str(c)+ "\t")
-        #f.write("\t")
         f.write(str(room_dict[c][1]) + "\t")
-        #print(room_dict[c])
         f.write(str(prof[c-1]) + "\t")
         f.write(str(room_dict[c][0]) + "\t")
         f.write(''.join(str(e) + " " for e in s_in_c[c]))
-        #print(s_in_c[c])
         f.write("\n")
     f.close()
 
@@ -218,12 +204,10 @@ professors, rooms, times = parse_classTimes(constraints)
 dict = parse_pref(prefs)
 students = dict.keys()
 classes = count_class_size(parse_pref(prefs))
-# print (classes)
 rooms = sort_room_cap(rooms)
 schedule, position, room_dict = scheduling(classes, students, professors, times, rooms)
 end = time.time()
 s_in_c = get_students_in_class(dict, room_dict)
-#print(room_dict)
 write_schedule_to_file(s_in_c, professors, room_dict, schedule, sys.argv[3])
 print(test_result(students, dict, schedule, position))
 print("runtime: {}".format(end-start))

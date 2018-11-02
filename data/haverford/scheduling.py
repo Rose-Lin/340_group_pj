@@ -92,14 +92,12 @@ def count_class_size(pref_dict):
 # classes is a list of clsses from count_class_size(), so it should be sorted by popularity already
 # rooms should also be sorted list in increasing order of capacity (room_id, cap)
 def scheduling(classes, students, professors, times, rooms, hc_classes):
-    # print(rooms)
     Schedule = [[0 for y in rooms] for x in times]
     room_index_dict = {}
     index = 0
     for room in rooms:
         room_index_dict[index] = room
         index += 1
-    # print(room_index_dict)
     # Position is a dict keyed with class id
     Position = {}
     # room_dict is a dictrionary keyed with class id and (time slot,room id) in the schedule as value
@@ -111,9 +109,7 @@ def scheduling(classes, students, professors, times, rooms, hc_classes):
         if not class_id in hc_classes:
             continue
         popularity = pair[1]
-        # room_id = 0
         index, t, cap = find_valid_room(Schedule, popularity, room_index_dict, professors, class_id)
-        # room_id, t, cap = find_valid_room(Schedule, popularity, rooms, professors, class_id)
         if t == None:
             # Corner cases: when a specific room has very small capacity, so that the current class c cannot fit in any time of this room, and other rooms are all filled also.
             for ava_r in range(len(ava_rooms)):
@@ -151,7 +147,6 @@ def find_valid_room(Schedule, threshold, room_index_dict, professors, class_id):
             t = empty_timeslot(Schedule, room_id, professors, class_id, index)
             if not t == None:
                 break
-    #print(t, room_id)
     return index, t, capacity
 
 def empty_timeslot(Schedule, room_id, professors, class_id, index):
@@ -169,8 +164,6 @@ def empty_timeslot(Schedule, room_id, professors, class_id, index):
 
 def sort_room_cap(Class_list):
     Class_list.sort(key = lambda x: x[1])
-    # Class_list.reverse()
-    #print (Class_list)
     return Class_list
 
 def test_result(S, Pref, Schedule, Position):
