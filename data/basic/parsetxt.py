@@ -7,8 +7,8 @@ def parse_classTimes(file):
     with open (file) as f:
         raw_content = f.read().strip()
         table = raw_content.split('\n')
-        total_time_slots = int(table[0].split('\t')[1])
-        total_rooms = int(table[1].split('\t')[1])
+        total_time_slots = int(table[0].split('\t')[1]) #20
+        total_rooms = int(table[1].split('\t')[1]) #10
         # class_line is the line number of the start of the classes
         class_line = total_rooms
         total_classes = table[2+class_line]
@@ -22,14 +22,13 @@ def parse_classTimes(file):
     # 1 indexing, room id starts from 1
     rooms = []
     # 0 indexing, time slot id starts from 0
-    time_slots = []
+    time_slots = [x for x in range(total_time_slots)]
     for line in rooms_times_lines:
         tokens = line.split('\t')
         class_time = int(tokens[0])
         room = int(tokens[1])
         room_id = int(tokens[0])
         #print("class_time: {}---room:{}".format(class_time, room))
-        time_slots.append(class_time-1)
         rooms.append((room_id, room))
     for line in teachers_classes_lines:
         tokens = line.split('\t')
@@ -84,14 +83,12 @@ def get_students_in_class(pref_dict, room_dict):
 # classes is a list of clsses from count_class_size(), so it should be sorted by popularity already
 # rooms should also be sorted list in increasing order of capacity (room_id, cap)
 def scheduling(classes, students, professors, times, rooms):
-    print(rooms)
     Schedule = [[0 for y in rooms] for x in times]
     room_index_dict = {}
     index = 0
     for room in rooms:
         room_index_dict[index] = room
         index += 1
-    print(room_index_dict)
     # a list of indecis of classes in the Schedule
     Position = [0]*len(classes)
     # room_dict is a dictrionary keyed with class id and (time slot,room id) in the schedule as value
@@ -105,6 +102,8 @@ def scheduling(classes, students, professors, times, rooms):
         index, t, cap = find_valid_room(Schedule, popularity, room_index_dict, professors, class_id)
         # room_id, t, cap = find_valid_room(Schedule, popularity, rooms, professors, class_id)
         if t == None:
+            print('correct')
+            print(Schedule)
             # Corner cases: when a specific room has very small capacity, so that the current class c cannot fit in any time of this room, and other rooms are all filled also.
             for ava_r in range(len(ava_rooms)):
                 if ava_rooms[ava_r] > 0:
@@ -219,7 +218,7 @@ professors, rooms, times = parse_classTimes(constraints)
 dict = parse_pref(prefs)
 students = dict.keys()
 classes = count_class_size(parse_pref(prefs))
-print (classes)
+# print (classes)
 rooms = sort_room_cap(rooms)
 schedule, position, room_dict = scheduling(classes, students, professors, times, rooms)
 end = time.time()
