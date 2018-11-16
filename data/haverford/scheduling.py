@@ -58,7 +58,7 @@ def get_dup_time_slot_dict(time_slots):
     # take in a dictrionary of time slots and output a dictionary where key is weekdays and value is the list of list of
     # overlapping time slots.
     time_slot_grouping = {}
-    time_slot_grouping["a"]:"hello"
+    #time_slot_grouping["a"]:"hello"
     time_slot_no_overlapping = {}
     for days in time_slots.keys():
         print(days)
@@ -70,8 +70,7 @@ def get_dup_time_slot_dict(time_slots):
         same_time_list = []
         diff_time_list = []
         sublist = []
-        latest_end_time = ""
-        for index in range(len(sort_by_start)-1):
+        for index in range(len(sort_by_start)):
             elem = sort_by_start[index]
             if index == 0:
                 #diff_time_list.append(elem)
@@ -84,8 +83,8 @@ def get_dup_time_slot_dict(time_slots):
             else:
                 if len(sublist) > 1:
                     same_time_list.append(sublist)
-                diff_time_list.append(sublist[0])
                 sublist = [elem]
+                diff_time_list.append(sublist[0])
                 latest_end_time = elem[1]
             #print(latest_end_time)
             #print(sublist)
