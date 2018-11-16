@@ -44,12 +44,14 @@ def haverford_parse_prof_rooms_times_class(file):
     return profs, rooms, time_slots, hc_classes
 
 def get_time_slot_dict(start_time, end_time, days, time_slots):
+    time_slots_keys = ''
     for day in days:
-        if day in time_slots.keys():
-            if (start_time, end_time) not in time_slots[day]:
-                time_slots[day].append((start_time, end_time))
-        else:
-            time_slots[day] = [(start_time, end_time)]
+        time_slots_keys += day + ','
+    time_slots_keys = time_slots_keys[:-1]
+    if time_slots_keys in time_slots.keys():
+        time_slots[time_slots_keys].append((start_time, end_time))
+    else:
+        time_slots[time_slots_keys] = [(start_time, end_time)]
     return time_slots
 
 def get_dup_time_slot_dict(time_slots):
