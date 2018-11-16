@@ -52,6 +52,39 @@ def get_time_slot_dict(start_time, end_time, days, time_slots):
             time_slots[day] = [(start_time, end_time)]
     return time_slots
 
+def get_dup_time_slot_dict(time_slots):
+    # take in a dictrionary of time slots and output a dictionary where key is weekdays and value is the list of list of
+    # overlapping time slots.
+    time_slot_grouping = {}
+    time_slot_no_overlapping = {}
+    for days in time_slots.keys():
+        # sort time slots by starting time:
+        sort_by_start = sorted(time_slots[days], key = lambda x: x[0])
+        # sort time slots by ending time:
+        #sort_by_end = sorted(time_slots[days], key = lambda x: x[1])
+        same_time_list = []
+        diff_time_list = []
+        sublist = []
+        for index in sort_by_start.len()-1:
+            elem = sort_by_start[index]
+            if index == 0:
+                #diff_time_list.append(elem)
+                sublist = [elem]
+                latest_end_time = elem[1]
+            elif latest_end_time > elem[0]:
+                sublist.append(elem)
+                if latest_end_time < elem[1]:
+                    latest_end_time = elem[1]
+            else:
+                if sublist.len() > 1:
+                    same_time_list.append(sublist)
+                diff_time_list.append(sublist[0])
+                sublist = [elem]
+        time_slot_grouping[days] : same_time_list
+        time_slot_no_overlapping[days]: diff_time_list
+    return time_slot_grouping, time_slot_no_overlapping
+
+
 
 def haverford_reconstruct_time_slots(time_slots):
     """ A function reconstruct a dictrionary of time_slots to a list, so that it is ready to be passed into scheduling function"""
@@ -184,6 +217,7 @@ def test_result(S, Pref, Schedule, Position):
 
 start = time.time()
 professors, rooms, times, hc_classes = haverford_parse_prof_rooms_times_class("../haverford/haverfordConstraints.txt")
+
 times = haverford_reconstruct_time_slots(times)
 pref_dict = haverford_parse_pref("../haverford/haverfordStudentPrefs.txt")
 students = pref_dict.keys()
