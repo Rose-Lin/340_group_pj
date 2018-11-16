@@ -61,31 +61,39 @@ def get_dup_time_slot_dict(time_slots):
     #time_slot_grouping["a"]:"hello"
     time_slot_no_overlapping = {}
     for days in time_slots.keys():
-        print(days)
+        #print(days)
         # sort time slots by starting time:
         sort_by_start = sorted(time_slots[days], key = lambda x: x[0])
-        print(sort_by_start)
-        # sort time slots by ending time:
-        #sort_by_end = sorted(time_slots[days], key = lambda x: x[1])
+        #print(sort_by_start)
         same_time_list = []
         diff_time_list = []
+
+        # sublist is the small group in that day
         sublist = []
         for index in range(len(sort_by_start)):
             elem = sort_by_start[index]
             if index == 0:
-                #diff_time_list.append(elem)
+                diff_time_list.append(elem)
                 sublist = [elem]
                 latest_end_time = elem[1]
+
+            # if the end time of the previous is later than the start time of this class
             elif latest_end_time > elem[0]:
                 sublist.append(elem)
                 if latest_end_time < elem[1]:
                     latest_end_time = elem[1]
+
+            # if there is no overlapping, start a new list
             else:
                 if len(sublist) > 1:
                     same_time_list.append(sublist)
                 sublist = [elem]
-                diff_time_list.append(sublist[0])
+                diff_time_list.append(elem)
                 latest_end_time = elem[1]
+
+        # if more than 1 class in cluster, add the cluster into the same group, if just 1 class, no conflict, don't add
+        if len(sublist) > 1:
+            same_time_list.append(sublist)
             #print(latest_end_time)
             #print(sublist)
         time_slot_grouping[days] = same_time_list
@@ -227,8 +235,8 @@ def test_result(S, Pref, Schedule, Position):
 start = time.time()
 professors, rooms, times, hc_classes = haverford_parse_prof_rooms_times_class("../haverford/haverfordConstraints.txt")
 time_group, time_no_dup = get_dup_time_slot_dict(times)
-print(time_group)
-print(time_no_dup)
+#print(time_group)
+#print(time_no_dup)
 times = haverford_reconstruct_time_slots(times)
 pref_dict = haverford_parse_pref("../haverford/haverfordStudentPrefs.txt")
 students = pref_dict.keys()
