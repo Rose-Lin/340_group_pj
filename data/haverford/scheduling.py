@@ -58,16 +58,20 @@ def get_dup_time_slot_dict(time_slots):
     # take in a dictrionary of time slots and output a dictionary where key is weekdays and value is the list of list of
     # overlapping time slots.
     time_slot_grouping = {}
+    time_slot_grouping["a"]:"hello"
     time_slot_no_overlapping = {}
     for days in time_slots.keys():
+        print(days)
         # sort time slots by starting time:
         sort_by_start = sorted(time_slots[days], key = lambda x: x[0])
+        print(sort_by_start)
         # sort time slots by ending time:
         #sort_by_end = sorted(time_slots[days], key = lambda x: x[1])
         same_time_list = []
         diff_time_list = []
         sublist = []
-        for index in sort_by_start.len()-1:
+        latest_end_time = ""
+        for index in range(len(sort_by_start)-1):
             elem = sort_by_start[index]
             if index == 0:
                 #diff_time_list.append(elem)
@@ -78,12 +82,16 @@ def get_dup_time_slot_dict(time_slots):
                 if latest_end_time < elem[1]:
                     latest_end_time = elem[1]
             else:
-                if sublist.len() > 1:
+                if len(sublist) > 1:
                     same_time_list.append(sublist)
                 diff_time_list.append(sublist[0])
                 sublist = [elem]
-        time_slot_grouping[days] : same_time_list
-        time_slot_no_overlapping[days]: diff_time_list
+                latest_end_time = elem[1]
+            #print(latest_end_time)
+            #print(sublist)
+        time_slot_grouping[days] = same_time_list
+        #print(time_slot_grouping)
+        time_slot_no_overlapping[days] = diff_time_list
     return time_slot_grouping, time_slot_no_overlapping
 
 
@@ -160,9 +168,9 @@ def scheduling(classes, students, professors, times, rooms, hc_classes):
         room_dict[class_id] = (t+1,room_id)
         Position[class_id] = (t,index)
     print("----------Schedule-----------")
-    print (Schedule)
+    #print (Schedule)
     print("-----------Position-----------")
-    print(Position)
+    #print(Position)
     # print('-----------Room dict--------')
     # print(room_dict)
     return Schedule, Position, room_dict
@@ -219,7 +227,9 @@ def test_result(S, Pref, Schedule, Position):
 
 start = time.time()
 professors, rooms, times, hc_classes = haverford_parse_prof_rooms_times_class("../haverford/haverfordConstraints.txt")
-
+time_group, time_no_dup = get_dup_time_slot_dict(times)
+print(time_group)
+print(time_no_dup)
 times = haverford_reconstruct_time_slots(times)
 pref_dict = haverford_parse_pref("../haverford/haverfordStudentPrefs.txt")
 students = pref_dict.keys()
