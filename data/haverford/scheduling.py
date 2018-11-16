@@ -61,14 +61,14 @@ def get_dup_time_slot_dict(time_slots):
     #time_slot_grouping["a"]:"hello"
     time_slot_no_overlapping = {}
     for days in time_slots.keys():
-        # print(days)
+        #print(days)
         # sort time slots by starting time:
         sort_by_start = sorted(time_slots[days], key = lambda x: x[0])
-        # print(sort_by_start)
-        # sort time slots by ending time:
-        #sort_by_end = sorted(time_slots[days], key = lambda x: x[1])
+        #print(sort_by_start)
         same_time_list = []
         diff_time_list = []
+
+        # sublist is the small group in that day
         sublist = []
         for index in range(len(sort_by_start)):
             elem = sort_by_start[index]
@@ -76,24 +76,30 @@ def get_dup_time_slot_dict(time_slots):
                 diff_time_list.append(elem)
                 sublist = [elem]
                 latest_end_time = elem[1]
+
+            # if the end time of the previous is later than the start time of this class
             elif latest_end_time > elem[0]:
                 sublist.append(elem)
                 if latest_end_time < elem[1]:
                     latest_end_time = elem[1]
+
+            # if there is no overlapping, start a new list
             else:
                 if len(sublist) > 1:
                     same_time_list.append(sublist)
                 sublist = [elem]
-                diff_time_list.append(sublist[0])
+                diff_time_list.append(elem)
                 latest_end_time = elem[1]
+
+        # if more than 1 class in cluster, add the cluster into the same group, if just 1 class, no conflict, don't add
+        if len(sublist) > 1:
+            same_time_list.append(sublist)
             #print(latest_end_time)
             #print(sublist)
         time_slot_grouping[days] = same_time_list
         #print(time_slot_grouping)
         time_slot_no_overlapping[days] = diff_time_list
     return time_slot_grouping, time_slot_no_overlapping
-
-
 
 def haverford_reconstruct_time_slots(time_slots):
     """ A function reconstruct a dictrionary of time_slots to a list, so that it is ready to be passed into scheduling function"""
@@ -133,9 +139,11 @@ def count_class_size(pref_dict):
 
 def init_overlapping_schedule(overlapping_slots, rooms):
     """A function that initialize a scheduling table for overlapping time slots"""
+    print(overlapping_slots)
     num_rows = 0
-    for key in overlapping_slots.keys():
-        num_rows += len(overlapping_slots[key])-1
+    for days in overlapping_slots.keys():
+        for group in overlapping_slots[days]:
+            num_rows += len(group)-1
     overlapping_schedule= [[0 for y in rooms] for x in range(num_rows)]
     return overlapping_schedule
 
@@ -169,13 +177,13 @@ def fill_schedule(schedule, room_dict, Position,classes, i, students, professors
 
 # classes is a list of clsses from count_class_size(), so it should be sorted by popularity already
 # rooms should also be sorted list in increasing order of capacity (room_id, cap)
-# overlapping_slots is a dictrionary of overlapping time slots. e.g. {'T,H': [(1:00PM, 4:00PM), (2:30PM, 4:00PM),(12:00PM, 1:30PM)]}
+# overlapping_slots is a dictrionary of overlapping time slots. e.g. {'T,H': [[(1:00PM, 4:00PM), (2:30PM, 4:00PM),(12:00PM, 1:30PM)]]}
 # times is a dictrionary of non-overlapping time slots
-def scheduling(classes, students, professors, times, rooms, hc_classes):
-# def scheduling(classes, students, professors, times, rooms, hc_classes, overlapping_slots):
+# def scheduling(classes, students, professors, times, rooms, hc_classes):
+def scheduling(classes, students, professors, times, rooms, hc_classes, overlapping_slots):
     # schedule for non-overlapping time slots
     Schedule = [[0 for y in rooms] for x in times]
-    # overlapping_schedule = init_overlapping_schedule(overlapping_slots, rooms) # TODO: variable name
+    overlapping_schedule = init_overlapping_schedule(overlapping_slots, rooms) # TODO: variable name
     room_index_dict = {}
     index = 0
     for room in rooms:
@@ -192,20 +200,22 @@ def scheduling(classes, students, professors, times, rooms, hc_classes):
     if i < len(classes):
         # there are classes still not scheduled
         # move on to overlapping_schedule
-        # ava_rooms = [len(overlapping_schedule)]*len(rooms)
-        # overlapping_schedule, i = fill_schedule(overlapping_schedule,room_dict, Position, classes, i, students, professors, times, room_index_dict, hc_classes, ava_rooms)
+        ava_rooms = [len(overlapping_schedule)]*len(rooms)
+        overlapping_schedule, i = fill_schedule(overlapping_schedule,room_dict, Position, classes, i, students, professors, times, room_index_dict, hc_classes, ava_rooms)
         pass
-    # print("----------non_overlapping Schedule-----------")
-    # print (Schedule)
+    print("----------non_overlapping Schedule-----------")
+    print (Schedule)
+    print("------------overlapping schedule-----------")
+    print(overlapping_schedule)
     # print("-----------Position-----------")
     # print(Position)
     # print('-----------Room dict--------')
     # print(room_dict)
-    return Schedule, Position, room_dict
+    return Schedule+overlapping_schedule, Position, room_dict
 
 def find_valid_room(Schedule, threshold, room_index_dict, professors, class_id):
     room_id = 0
-    t = 0
+    t = None
     capacity = 0
     total_rooms = len(rooms)
     for index, room in room_index_dict.items():
@@ -234,6 +244,9 @@ def empty_timeslot(Schedule, room_id, professors, class_id, index):
 
 def sort_room_cap(Class_list):
     Class_list.sort(key = lambda x: x[1])
+    Class_list.reverse()
+    # Important!!!!!
+    # Wether to reverse the list depends on how many rooms there are and the room capacity
     return Class_list
 
 def test_result(S, Pref, Schedule, Position):
@@ -254,29 +267,16 @@ def test_result(S, Pref, Schedule, Position):
 
 start = time.time()
 professors, rooms, times, hc_classes = haverford_parse_prof_rooms_times_class("../haverford/haverfordConstraints.txt")
-print(times)
-length = 0
-for t in times.keys():
-    length += len(times[t])
-print(length)
 time_group, time_no_dup = get_dup_time_slot_dict(times)
-print(time_group)
-length = 0
-for t in time_group.keys():
-    for k in time_group[t]:
-        length = length + len(k )
-print(length)
-length = 0
-for t in time_no_dup.keys():
-    length += len(time_no_dup[t])
-print(length)
-print(time_no_dup)
+# time_no_dup is non-overlapping time slots
+# time_group is overlapping time slots
 times = haverford_reconstruct_time_slots(times)
+time_no_dup = haverford_reconstruct_time_slots(time_no_dup)
 pref_dict = haverford_parse_pref("../haverford/haverfordStudentPrefs.txt")
 students = pref_dict.keys()
 classes = count_class_size(pref_dict)
 rooms = sort_room_cap(rooms)
-schedule, position, room_dict = scheduling(classes, students, professors, times[:5], rooms, hc_classes)
+schedule, position, room_dict = scheduling(classes, students, professors, time_no_dup, rooms[:30], hc_classes, time_group)
 end = time.time()
 print(test_result(students, pref_dict, schedule, position))
 print("runtime: {}".format(end-start))
