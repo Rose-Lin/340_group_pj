@@ -35,6 +35,7 @@ def haverford_parse_prof_rooms_times_class(file):
         hc_classes = []
         # class_major is {class_id: major}
         class_major = {}
+        depart_build = {}
         for i in range(class_line_num+2, class_line_num+total_classes+2):
             tokenizes = lines[i].split('\t')
             class_id = int(tokenizes[0])
@@ -42,10 +43,12 @@ def haverford_parse_prof_rooms_times_class(file):
             if tokenizes[1]:
                 prof_id = int(tokenizes[1])
                 major = tokenizes[2]
+                possible_rooms = tokenizes[3:]
                 profs[class_id] = prof_id
                 class_major[class_id] = major
+                depart_build[major] = possible_rooms
                 hc_classes.append(class_id)
-    return profs, rooms, time_slots, hc_classes, class_major
+    return profs, rooms, time_slots, hc_classes, class_major, depart_build
 
 def get_time_slot_dict(start_time, end_time, days, time_slots):
     time_slots_keys = ''
@@ -154,9 +157,9 @@ def fill_schedule(schedule, room_dict, Position,classes, i, students, professors
         possible_room_index = {}
         for index, room in room_index_dict.items():
             if room in possible_rooms:
-                possible_index.append((index, room))
+                possible_room_index[index] = room
         popularity = classes[i][1]
-        index, t, cap = find_valid_room(schedule, popularity, possible_index, professors, class_id)
+        index, t, cap = find_valid_room(schedule, popularity, possible_room_index, professors, class_id)
         if t == None:
             # Corner cases: when a specific room has very small capacity, so that the current class c cannot fit in any time of this room, and other rooms are all filled also.
             for ava_r in range(len(ava_rooms)):
@@ -220,6 +223,7 @@ def find_valid_room(Schedule, threshold, room_index_dict, professors, class_id):
     t = None
     capacity = 0
     total_rooms = len(rooms)
+    index = 0
     for index, room in room_index_dict.items():
         rid = room[0]
         cap = room[1]
@@ -300,7 +304,7 @@ if len(sys.argv) != 4:
     print("Usage: " + 'python3' + " <constraints.txt> <student_prefs.txt> <schedule.txt>")
     exit(1)
 start = time.time()
-professors, rooms, times, hc_classes, class_major = haverford_parse_prof_rooms_times_class(sys.argv[1])
+professors, rooms, times, hc_classes, class_major, depart_build = haverford_parse_prof_rooms_times_class(sys.argv[1])
 time_group, time_no_dup = get_dup_time_slot_dict(times)
 # time_no_dup is non-overlapping time slots
 # time_group is overlapping time slots
@@ -310,7 +314,7 @@ pref_dict = haverford_parse_pref(sys.argv[2])
 students = pref_dict.keys()
 classes = count_class_size(pref_dict)
 rooms = sort_room_cap(rooms)
-schedule, position, room_dict, over_Position = scheduling(classes, students, professors, time_no_dup, rooms, hc_classes, time_group,class_major,{})
+schedule, position, room_dict, over_Position = scheduling(classes, students, professors, time_no_dup, rooms, hc_classes, time_group,class_major,depart_build)
 end = time.time()
 student_in_class = get_students_in_class(pref_dict, room_dict)
 write_schedule_to_file(student_in_class, professors, room_dict, schedule, sys.argv[3])
