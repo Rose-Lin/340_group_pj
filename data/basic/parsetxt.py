@@ -97,7 +97,7 @@ def scheduling(classes, students, professors, times, rooms):
         popularity = pair[1]
         index, t, cap = find_valid_room(Schedule, popularity, room_index_dict, professors, class_id)
         if t == None:
-            print('correct')
+            # print('correct')
             print(Schedule)
             # Corner cases: when a specific room has very small capacity, so that the current class c cannot fit in any time of this room, and other rooms are all filled also.
             for ava_r in range(len(ava_rooms)):
