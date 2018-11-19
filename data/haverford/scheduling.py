@@ -203,10 +203,10 @@ def scheduling(classes, students, professors, times, rooms, hc_classes, overlapp
         ava_rooms = [len(overlapping_schedule)]*len(rooms)
         overlapping_schedule, i = fill_schedule(overlapping_schedule,room_dict, Position, classes, i, students, professors, times, room_index_dict, hc_classes, ava_rooms)
         pass
-    print("----------non_overlapping Schedule-----------")
-    print (Schedule)
-    print("------------overlapping schedule-----------")
-    print(overlapping_schedule)
+    # print("----------non_overlapping Schedule-----------")
+    # print (Schedule)
+    # print("------------overlapping schedule-----------")
+    # print(overlapping_schedule)
     # print("-----------Position-----------")
     # print(Position)
     # print('-----------Room dict--------')
@@ -267,6 +267,33 @@ def test_result(S, Pref, Schedule, Position):
                 total -= 1
     return (float(count)/total)
 
+def write_schedule_to_file(s_in_c, prof, room_dict, schedule, file):
+    f = open(file, 'w')
+    f.write("Course\tRoom\tTeacher\tTime\tStudents\n")
+    for c in s_in_c:
+        if c in room_dict.keys():
+            f.write(str(c)+ "\t")
+            f.write(str(room_dict[c][1]) + "\t")
+            f.write(str(prof[c]) + "\t")
+            f.write(str(room_dict[c][0]) + "\t")
+            f.write(''.join(str(e) + " " for e in s_in_c[c]))
+            f.write("\n")
+    f.close()
+
+def get_students_in_class(pref_dict, room_dict):
+    students = {}
+    for s in pref_dict:
+        times = []
+        for c in pref_dict[s]:
+            if c in room_dict.keys():
+                if room_dict[c][0] not in times:
+                    times.append(room_dict[c][0])
+                    if c in students:
+                        students[c].append(s)
+                    else:
+                        students[c] = [s]
+    return students
+
 start = time.time()
 professors, rooms, times, hc_classes = haverford_parse_prof_rooms_times_class("../haverford/haverfordConstraints.txt")
 time_group, time_no_dup = get_dup_time_slot_dict(times)
@@ -280,5 +307,7 @@ classes = count_class_size(pref_dict)
 rooms = sort_room_cap(rooms)
 schedule, position, room_dict = scheduling(classes, students, professors, time_no_dup, rooms[:30], hc_classes, time_group)
 end = time.time()
+student_in_class = get_students_in_class(pref_dict, room_dict)
+write_schedule_to_file(student_in_class, professors, room_dict, schedule, 'output.txt')
 print(test_result(students, pref_dict, schedule, position))
 print("runtime: {}".format(end-start))
