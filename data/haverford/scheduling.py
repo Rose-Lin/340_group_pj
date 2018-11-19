@@ -69,7 +69,6 @@ def get_dup_time_slot_dict(time_slots):
         sort_by_start = sorted(time_slots[days], key = lambda x: x[0])
         same_time_list = []
         diff_time_list = []
-
         # sublist is the small group in that day
         sublist = []
         for index in range(len(sort_by_start)):
