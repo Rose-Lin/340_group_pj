@@ -231,13 +231,15 @@ def find_valid_room(Schedule, threshold, room_index_dict, professors, class_id):
 
 def empty_timeslot(Schedule, room_id, professors, class_id, index):
     for row in range (len( Schedule)):
-        Prof = []
+        professor_conflict = False
         if Schedule[row][index] == 0:
-            for i in range (0,index,1):
+            for i in range (len(Schedule[0])):
                 c_id = Schedule[row][i]
                 if c_id > 0:
-                    Prof.append(professors[c_id])
-            if not professors[class_id] in Prof:
+                    if professors[c_id] == professors[class_id]:
+                        professor_conflict = True
+                        break
+            if professor_conflict == False:
                 return row
     return None
 

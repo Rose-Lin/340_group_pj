@@ -122,7 +122,7 @@ def scheduling(classes, students, professors, times, rooms):
 
 def find_valid_room(Schedule, threshold, room_index_dict, professors, class_id):
     room_id = 0
-    t = 0
+    t = None
     capacity = 0
     total_rooms = len(rooms)
     # for rid, cap in room_index_dict:
