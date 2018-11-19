@@ -59,6 +59,18 @@ def get_courses(list_of_dicts):
       courses[course] = dict
   return courses
 
+# didn't handle the case where a course number is corresponded to multiple courses.
+def get_subject_level(list_of_dicts):
+    subject_level = {}
+    for dict in list_of_dicts:
+        course = dict["Course ID"]
+        department = dict["Subject"]
+        campus = dict["College"]
+        level = dict["Level"]
+        if not course in subject_level and campus == "H":
+            subject_level[course] = (department,level)
+    return subject_level
+
 def get_prof_courses(list_of_dicts):
   profs = {}
   for dict in list_of_dicts:
@@ -153,10 +165,12 @@ def write_teachers_to_file(list_of_dicts, f):
   prof_courses = get_prof_courses(list_of_dicts)
   num_profs = len(prof_courses)
   courses = get_courses(list_of_dicts)
+  subject_level = get_subject_level(list_of_dicts)
   f.write("Teachers\t" + str(num_profs) + "\n")
   for course in courses:
     f.write(course + "\t")
-    f.write(courses[course]["Instructor ID"])
+    f.write(courses[course]["Instructor ID"] + "\t")
+    f.write(subject_level[course][0])
     f.write("\n")
 
 def write_constraints_to_file(list_of_dicts, filename):
