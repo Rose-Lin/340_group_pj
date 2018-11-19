@@ -72,7 +72,7 @@ def get_building(list_of_dicts):
         building[subject] = [room]
   return building
 
-# didn't handle the case where a course number is corresponded to multiple courses.
+# Issue: didn't handle the case where a course number is corresponded to multiple courses.
 def get_subject_level(list_of_dicts):
     subject_level = {}
     for dict in list_of_dicts:
@@ -192,7 +192,6 @@ def write_teachers_to_file(list_of_dicts, f):
   subject_level = get_subject_level(list_of_dicts)
   building = get_building(list_of_dicts)
   f.write("Teachers\t" + str(num_profs) + "\n")
-  print(building)
   for course in courses:
     f.write(course + "\t")
     f.write(courses[course]["Instructor ID"] + "\t")

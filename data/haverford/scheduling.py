@@ -256,7 +256,7 @@ def sort_room_cap(Class_list):
     # Wether to reverse the list depends on how many rooms there are and the room capacity
     return Class_list
 
-def test_result(S, Pref, Schedule, Position):
+def test_result(S, Pref, Schedule, Position, classes, rooms):
     count = 0
     total = 0
     for s in S:
@@ -264,12 +264,21 @@ def test_result(S, Pref, Schedule, Position):
         final_pick = [0] * (len(Schedule)+1)
         for c in Pref[s]:
             if c in Position:
-                t = Position[c][0]
-                if final_pick[t] == 0:
-                    final_pick[t] = c
+                t_index = Position[c][0]
+                if final_pick[t_index] == 0:
+                    final_pick[t_index] = c
                     count += 1
             else:
                 total -= 1
+    for c in Position.keys():
+        r_index = Position[c][1]
+        room_cap = rooms[r_index][1]
+        pop = 0
+        for pair in classes:
+            if c == pair[0]:
+                    pop = pair[1]
+        if pop > room_cap:
+            count -= (pop-room_cap)
     return (float(count)/total)
 
 def write_schedule_to_file(s_in_c, prof, room_dict, schedule, file):
@@ -317,5 +326,5 @@ schedule, position, room_dict, over_Position = scheduling(classes, students, pro
 end = time.time()
 student_in_class = get_students_in_class(pref_dict, room_dict)
 write_schedule_to_file(student_in_class, professors, room_dict, schedule, sys.argv[3])
-print(test_result(students, pref_dict, schedule, position))
+print(test_result(students, pref_dict, schedule, position, classes, rooms))
 print("runtime: {}".format(end-start))
