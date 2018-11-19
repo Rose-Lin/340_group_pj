@@ -65,7 +65,6 @@ def get_dup_time_slot_dict(time_slots):
     # take in a dictrionary of time slots and output a dictionary where key is weekdays and value is the list of list of
     # overlapping time slots.
     time_slot_grouping = {}
-    #time_slot_grouping["a"]:"hello"
     time_slot_no_overlapping = {}
     for days in time_slots.keys():
         # sort time slots by starting time:
@@ -156,7 +155,7 @@ def fill_schedule(schedule, room_dict, Position,classes, i, students, professors
         possible_rooms = department_build[major]
         possible_room_index = {}
         for index, room in room_index_dict.items():
-            if room in possible_rooms:
+            if room[0] in possible_rooms:
                 possible_room_index[index] = room
         popularity = classes[i][1]
         index, t, cap = find_valid_room(schedule, popularity, possible_room_index, professors, class_id)
