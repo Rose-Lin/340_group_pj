@@ -33,15 +33,19 @@ def haverford_parse_prof_rooms_times_class(file):
         profs = {}
         # haverford classes excluding labs and bmc classes
         hc_classes = []
+        # class_major is {class_id: major}
+        class_major = {}
         for i in range(class_line_num+2, class_line_num+total_classes+2):
             tokenizes = lines[i].split('\t')
             class_id = int(tokenizes[0])
             # TODO: this is not considering the labs
             if tokenizes[1]:
                 prof_id = int(tokenizes[1])
+                major = tokenizes[2]
                 profs[class_id] = prof_id
+                class_major[class_id] = major
                 hc_classes.append(class_id)
-    return profs, rooms, time_slots, hc_classes
+    return profs, rooms, time_slots, hc_classes, class_major
 
 def get_time_slot_dict(start_time, end_time, days, time_slots):
     time_slots_keys = ''
@@ -61,10 +65,8 @@ def get_dup_time_slot_dict(time_slots):
     #time_slot_grouping["a"]:"hello"
     time_slot_no_overlapping = {}
     for days in time_slots.keys():
-        #print(days)
         # sort time slots by starting time:
         sort_by_start = sorted(time_slots[days], key = lambda x: x[0])
-        #print(sort_by_start)
         same_time_list = []
         diff_time_list = []
 
@@ -94,10 +96,7 @@ def get_dup_time_slot_dict(time_slots):
         # if more than 1 class in cluster, add the cluster into the same group, if just 1 class, no conflict, don't add
         if len(sublist) > 1:
             same_time_list.append(sublist)
-            #print(latest_end_time)
-            #print(sublist)
         time_slot_grouping[days] = same_time_list
-        #print(time_slot_grouping)
         time_slot_no_overlapping[days] = diff_time_list
     return time_slot_grouping, time_slot_no_overlapping
 
@@ -134,12 +133,10 @@ def count_class_size(pref_dict):
     # content in n: (class id, popularity)
     n = sorted(sizes.items(), key=operator.itemgetter(1))
     n.reverse()
-    # print(n)
     return n
 
 def init_overlapping_schedule(overlapping_slots, rooms):
     """A function that initialize a scheduling table for overlapping time slots"""
-    print(overlapping_slots)
     num_rows = 0
     for days in overlapping_slots.keys():
         for group in overlapping_slots[days]:
@@ -147,14 +144,20 @@ def init_overlapping_schedule(overlapping_slots, rooms):
     overlapping_schedule= [[0 for y in rooms] for x in range(num_rows)]
     return overlapping_schedule
 
-def fill_schedule(schedule, room_dict, Position,classes, i, students, professors,times, room_index_dict, hc_classes, ava_rooms):
+def fill_schedule(schedule, room_dict, Position,classes, i, students, professors,times, room_index_dict, hc_classes, ava_rooms, class_department, department_build):
     while i < len(classes):
         class_id = classes[i][0]
         if not class_id in hc_classes:
             i += 1
             continue
+        major = class_department[class_id]
+        possible_rooms = department_build[major]
+        possible_room_index = {}
+        for index, room in room_index_dict.items():
+            if room in possible_rooms:
+                possible_index.append((index, room))
         popularity = classes[i][1]
-        index, t, cap = find_valid_room(schedule, popularity, room_index_dict, professors, class_id)
+        index, t, cap = find_valid_room(schedule, popularity, possible_index, professors, class_id)
         if t == None:
             # Corner cases: when a specific room has very small capacity, so that the current class c cannot fit in any time of this room, and other rooms are all filled also.
             for ava_r in range(len(ava_rooms)):
@@ -179,8 +182,7 @@ def fill_schedule(schedule, room_dict, Position,classes, i, students, professors
 # rooms should also be sorted list in increasing order of capacity (room_id, cap)
 # overlapping_slots is a dictrionary of overlapping time slots. e.g. {'T,H': [[(1:00PM, 4:00PM), (2:30PM, 4:00PM),(12:00PM, 1:30PM)]]}
 # times is a dictrionary of non-overlapping time slots
-# def scheduling(classes, students, professors, times, rooms, hc_classes):
-def scheduling(classes, students, professors, times, rooms, hc_classes, overlapping_slots):
+def scheduling(classes, students, professors, times, rooms, hc_classes, overlapping_slots, class_department, department_build):
     # schedule for non-overlapping time slots
     Schedule = [[0 for y in rooms] for x in times]
     overlapping_schedule = init_overlapping_schedule(overlapping_slots, rooms) # TODO: variable name
@@ -196,22 +198,23 @@ def scheduling(classes, students, professors, times, rooms, hc_classes, overlapp
     # available rooms in the Schedule, the content of which is the number of slots that is available for the room
     ava_rooms = [len(times)]*len(rooms)
     i = 0
-    Schedule, i = fill_schedule(Schedule,room_dict, Position, classes, i, students, professors, times, room_index_dict, hc_classes, ava_rooms)
+    Schedule, i = fill_schedule(Schedule,room_dict, Position, classes, i, students, professors, times, room_index_dict, hc_classes, ava_rooms, class_department, department_build)
+    over_Position = {}
     if i < len(classes):
         # there are classes still not scheduled
         # move on to overlapping_schedule
         ava_rooms = [len(overlapping_schedule)]*len(rooms)
-        overlapping_schedule, i = fill_schedule(overlapping_schedule,room_dict, Position, classes, i, students, professors, times, room_index_dict, hc_classes, ava_rooms)
+        overlapping_schedule, i = fill_schedule(overlapping_schedule,room_dict, over_Position, classes, i, students, professors, times, room_index_dict, hc_classes, ava_rooms, class_department, department_build)
         pass
-    # print("----------non_overlapping Schedule-----------")
-    # print (Schedule)
+    print("----------non_overlapping Schedule-----------")
+    print (Schedule)
     # print("------------overlapping schedule-----------")
     # print(overlapping_schedule)
     # print("-----------Position-----------")
     # print(Position)
     # print('-----------Room dict--------')
     # print(room_dict)
-    return Schedule+overlapping_schedule, Position, room_dict
+    return Schedule+overlapping_schedule, Position, room_dict, over_Position
 
 def find_valid_room(Schedule, threshold, room_index_dict, professors, class_id):
     room_id = 0
@@ -246,7 +249,7 @@ def empty_timeslot(Schedule, room_id, professors, class_id, index):
 
 def sort_room_cap(Class_list):
     Class_list.sort(key = lambda x: x[1])
-    Class_list.reverse()
+    # Class_list.reverse()
     # Important!!!!!
     # Wether to reverse the list depends on how many rooms there are and the room capacity
     return Class_list
@@ -298,7 +301,7 @@ if len(sys.argv) != 4:
     print("Usage: " + 'python3' + " <constraints.txt> <student_prefs.txt> <schedule.txt>")
     exit(1)
 start = time.time()
-professors, rooms, times, hc_classes = haverford_parse_prof_rooms_times_class(sys.argv[1])
+professors, rooms, times, hc_classes, class_major = haverford_parse_prof_rooms_times_class(sys.argv[1])
 time_group, time_no_dup = get_dup_time_slot_dict(times)
 # time_no_dup is non-overlapping time slots
 # time_group is overlapping time slots
@@ -308,7 +311,7 @@ pref_dict = haverford_parse_pref(sys.argv[2])
 students = pref_dict.keys()
 classes = count_class_size(pref_dict)
 rooms = sort_room_cap(rooms)
-schedule, position, room_dict = scheduling(classes, students, professors, time_no_dup, rooms[:30], hc_classes, time_group)
+schedule, position, room_dict, over_Position = scheduling(classes, students, professors, time_no_dup, rooms, hc_classes, time_group,class_major,{})
 end = time.time()
 student_in_class = get_students_in_class(pref_dict, room_dict)
 write_schedule_to_file(student_in_class, professors, room_dict, schedule, sys.argv[3])
