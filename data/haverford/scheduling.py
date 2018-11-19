@@ -294,20 +294,23 @@ def get_students_in_class(pref_dict, room_dict):
                         students[c] = [s]
     return students
 
+if len(sys.argv) != 4:
+    print("Usage: " + 'python3' + " <constraints.txt> <student_prefs.txt> <schedule.txt>")
+    exit(1)
 start = time.time()
-professors, rooms, times, hc_classes = haverford_parse_prof_rooms_times_class("../haverford/haverfordConstraints.txt")
+professors, rooms, times, hc_classes = haverford_parse_prof_rooms_times_class(sys.argv[1])
 time_group, time_no_dup = get_dup_time_slot_dict(times)
 # time_no_dup is non-overlapping time slots
 # time_group is overlapping time slots
 times = haverford_reconstruct_time_slots(times)
 time_no_dup = haverford_reconstruct_time_slots(time_no_dup)
-pref_dict = haverford_parse_pref("../haverford/haverfordStudentPrefs.txt")
+pref_dict = haverford_parse_pref(sys.argv[2])
 students = pref_dict.keys()
 classes = count_class_size(pref_dict)
 rooms = sort_room_cap(rooms)
 schedule, position, room_dict = scheduling(classes, students, professors, time_no_dup, rooms[:30], hc_classes, time_group)
 end = time.time()
 student_in_class = get_students_in_class(pref_dict, room_dict)
-write_schedule_to_file(student_in_class, professors, room_dict, schedule, 'output.txt')
+write_schedule_to_file(student_in_class, professors, room_dict, schedule, sys.argv[3])
 print(test_result(students, pref_dict, schedule, position))
 print("runtime: {}".format(end-start))
