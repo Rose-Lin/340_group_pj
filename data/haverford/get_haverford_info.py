@@ -59,17 +59,18 @@ def get_courses(list_of_dicts):
       courses[course] = dict
   return courses
 
-# didn't handle the case where a course number is corresponded to multiple courses.
-def get_subject_level(list_of_dicts):
-    subject_level = {}
-    for dict in list_of_dicts:
-        course = dict["Course ID"]
-        department = dict["Subject"]
-        campus = dict["College"]
-        level = dict["Level"]
-        if not course in subject_level and campus == "H":
-            subject_level[course] = (department,level)
-    return subject_level
+def get_building(list_of_dicts):
+  building = {}
+  for dict in list_of_dicts:
+    subject = dict["Subject"]
+    room = dict["Facil ID 1"]
+    if room == None:
+      continue
+      if subject in building:
+        building[subject].append(room)
+      else:
+        building[subject] = [room]
+  return building
 
 def get_prof_courses(list_of_dicts):
   profs = {}
@@ -132,6 +133,17 @@ def get_class_times(list_of_dicts):
 #              lab_courses[enrolled_course] = [course]
 #  return lab_courses
 
+def write_building_to_file(list_of_dicts, f):
+    building = get_building(list_of_dicts)
+    f = open(filename, 'w')
+    f.write("Building\t" + str(len(building)) + "\n")
+    for subject in building:
+        towrite = subject + "\t"
+        for room in building[subject]:
+            towrite = towrite + room + " "
+        towrite = towrite + "\n"
+        f.write(towrite)
+
 def write_prefs_to_file(list_of_dicts, filename):
   student_prefs = get_student_prefs_enrolled(list_of_dicts)
   f = open(filename, 'w')
@@ -165,12 +177,10 @@ def write_teachers_to_file(list_of_dicts, f):
   prof_courses = get_prof_courses(list_of_dicts)
   num_profs = len(prof_courses)
   courses = get_courses(list_of_dicts)
-  subject_level = get_subject_level(list_of_dicts)
   f.write("Teachers\t" + str(num_profs) + "\n")
   for course in courses:
     f.write(course + "\t")
-    f.write(courses[course]["Instructor ID"] + "\t")
-    f.write(subject_level[course][0])
+    f.write(courses[course]["Instructor ID"])
     f.write("\n")
 
 def write_constraints_to_file(list_of_dicts, filename):
