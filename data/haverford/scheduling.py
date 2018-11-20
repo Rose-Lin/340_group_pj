@@ -207,8 +207,8 @@ def scheduling(classes, students, professors, times, rooms, hc_classes, overlapp
         ava_rooms = [len(overlapping_schedule)]*len(rooms)
         overlapping_schedule, i = fill_schedule(overlapping_schedule,room_dict, over_Position, classes, i, students, professors, times, room_index_dict, hc_classes, ava_rooms, class_department, department_build)
         pass
-    print("----------non_overlapping Schedule-----------")
-    print (Schedule)
+    # print("----------non_overlapping Schedule-----------")
+    # print (Schedule)
     # print("------------overlapping schedule-----------")
     # print(overlapping_schedule)
     # print("-----------Position-----------")
@@ -326,5 +326,5 @@ schedule, position, room_dict, over_Position = scheduling(classes, students, pro
 end = time.time()
 student_in_class = get_students_in_class(pref_dict, room_dict)
 write_schedule_to_file(student_in_class, professors, room_dict, schedule, sys.argv[3])
-print(test_result(students, pref_dict, schedule, position, classes, rooms))
+print("satisfaction: {}".format(test_result(students, pref_dict, schedule, position, classes, rooms)))
 print("runtime: {}".format(end-start))
