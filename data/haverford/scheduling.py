@@ -125,7 +125,7 @@ def haverford_parse_pref(file):
 def count_class_size(pref_dict):
     sizes = {}
     for x in pref_dict:
-        for index in pref_dict[x]:
+        for index in set(pref_dict[x]):
             if index in sizes.keys():
                 sizes[index] += 1
             else:
