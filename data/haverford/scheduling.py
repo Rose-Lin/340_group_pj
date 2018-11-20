@@ -158,7 +158,7 @@ def fill_schedule(schedule, room_dict, Position,classes, i, students, professors
             if room[0] in possible_rooms:
                 possible_room_index[index] = room
         popularity = classes[i][1]
-        index, t, cap = find_valid_room(schedule, popularity, possible_room_index, professors, class_id)
+        index, t, cap = find_valid_reverse_room(schedule, popularity, possible_room_index, professors, class_id)
         if t == None:
             # Corner cases: when a specific room has very small capacity, so that the current class c cannot fit in any time of this room, and other rooms are all filled also.
             for ava_r in range(len(ava_rooms)):
@@ -217,6 +217,34 @@ def scheduling(classes, students, professors, times, rooms, hc_classes, overlapp
     # print(room_dict)
     return Schedule+overlapping_schedule, Position, room_dict, over_Position
 
+def find_valid_reverse_room(Schedule, threshold, room_index_dict, professors, class_id):
+    room_id = 0
+    t = None
+    capacity = 0
+    total_rooms = len(rooms)
+    index = 0
+    for index, room in room_index_dict.items():
+        room_id = room[0]
+        capacity = room[1]
+        t = empty_timeslot_reverse(Schedule, room_id, professors, class_id, index)
+        if not t == None:
+            break
+    return index, t, capacity
+
+def empty_timeslot_reverse(Schedule, room_id, professors, class_id, index):
+    for row in range (len( Schedule)):
+        professor_conflict = False
+        if Schedule[row][index] == 0:
+            for i in range (0, index):
+                c_id = Schedule[row][i]
+                if c_id > 0:
+                    if professors[c_id] == professors[class_id]:
+                        professor_conflict = True
+                        break
+            if professor_conflict == False:
+                return row
+    return None
+
 def find_valid_room(Schedule, threshold, room_index_dict, professors, class_id):
     room_id = 0
     t = None
@@ -248,10 +276,9 @@ def empty_timeslot(Schedule, room_id, professors, class_id, index):
                 return row
     return None
 
-
 def sort_room_cap(Class_list):
     Class_list.sort(key = lambda x: x[1])
-    # Class_list.reverse()
+    Class_list.reverse()
     # Important!!!!!
     # Wether to reverse the list depends on how many rooms there are and the room capacity
     return Class_list

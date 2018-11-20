@@ -1,2 +1,2 @@
 #!/bin/sh
-java MyMain $1 $2 $3
+python3 parsetxt.py demo_constraints.txt demo_studentprefs.txt output.txt
