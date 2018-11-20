@@ -97,8 +97,6 @@ def scheduling(classes, students, professors, times, rooms):
         popularity = pair[1]
         index, t, cap = find_valid_room(Schedule, popularity, room_index_dict, professors, class_id)
         if t == None:
-            print('correct')
-            print(Schedule)
             # Corner cases: when a specific room has very small capacity, so that the current class c cannot fit in any time of this room, and other rooms are all filled also.
             for ava_r in range(len(ava_rooms)):
                 if ava_rooms[ava_r] > 0:
@@ -112,12 +110,12 @@ def scheduling(classes, students, professors, times, rooms):
         room_id = room_index_dict[index][0]
         room_dict[class_id] = (t+1,room_id)
         Position[class_id-1] = (t,index)
-    print("----------Schedule-----------")
-    print (Schedule)
-    print("-----------Position-----------")
-    print(Position)
-    print('-----------Room dict--------')
-    print(room_dict)
+    # print("----------Schedule-----------")
+    # print (Schedule)
+    # print("-----------Position-----------")
+    # print(Position)
+    # print('-----------Room dict--------')
+    # print(room_dict)
     return Schedule, Position, room_dict
 
 def find_valid_room(Schedule, threshold, room_index_dict, professors, class_id):
@@ -209,5 +207,5 @@ schedule, position, room_dict = scheduling(classes, students, professors, times,
 end = time.time()
 s_in_c = get_students_in_class(dict, room_dict)
 write_schedule_to_file(s_in_c, professors, room_dict, schedule, sys.argv[3])
-print(test_result(students, dict, schedule, position))
+print("satisfaction: {}".format(test_result(students, dict, schedule, position)))
 print("runtime: {}".format(end-start))
