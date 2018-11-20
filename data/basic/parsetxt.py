@@ -87,7 +87,7 @@ def scheduling(classes, students, professors, times, rooms):
         room_index_dict[index] = room
         index += 1
     # a list of indecis of classes in the Schedule
-    Position = [0]*len(classes)
+    Position = [0]*len(professors)
     # room_dict is a dictrionary keyed with class id and (time slot,room id) in the schedule as value
     room_dict = {}
     # available rooms
@@ -149,7 +149,7 @@ def sort_room_cap(Class_list):
     Class_list.sort(key = lambda x: x[1])
     return Class_list
 
-def test_result(S, Pref, Schedule, Position):
+def test_result(S, Pref, Schedule, Position, rooms, classes):
     count = 0
     total = 0
     for s in S:
@@ -160,6 +160,17 @@ def test_result(S, Pref, Schedule, Position):
             if final_pick[t] == 0:
                 final_pick[t] = c
                 count += 1
+    for c in Position:
+        # print(c)
+        if c != 0:
+            r_index = c[1]
+            room_cap = rooms[r_index][1]
+            pop = 0
+            for pair in classes:
+                if c == pair[0]:
+                        pop = pair[1]
+            if pop > room_cap:
+                count -= (pop-room_cap)
     return (float(count)/total)
 
 def edgeWeights(dict):
@@ -207,5 +218,5 @@ schedule, position, room_dict = scheduling(classes, students, professors, times,
 end = time.time()
 s_in_c = get_students_in_class(dict, room_dict)
 write_schedule_to_file(s_in_c, professors, room_dict, schedule, sys.argv[3])
-print("satisfaction: {}".format(test_result(students, dict, schedule, position)))
+print("satisfaction: {}".format(test_result(students, dict, schedule, position, rooms, classes)))
 print("runtime: {}".format(end-start))
