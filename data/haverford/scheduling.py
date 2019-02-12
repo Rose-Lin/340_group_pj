@@ -158,7 +158,8 @@ def fill_schedule(schedule, room_dict, Position,classes, i, students, professors
             if room[0] in possible_rooms:
                 possible_room_index[index] = room
         popularity = classes[i][1]
-        index, t, cap = find_valid_reverse_room(schedule, popularity, possible_room_index, professors, class_id)
+        # index, t, cap = find_valid_reverse_room(schedule, popularity, possible_room_index, professors, class_id)
+        index, t, cap = find_valid_room(schedule, popularity, possible_room_index, professors, class_id)
         if t == None:
             # Corner cases: when a specific room has very small capacity, so that the current class c cannot fit in any time of this room, and other rooms are all filled also.
             for ava_r in range(len(ava_rooms)):
@@ -278,7 +279,7 @@ def empty_timeslot(Schedule, room_id, professors, class_id, index):
 
 def sort_room_cap(Class_list):
     Class_list.sort(key = lambda x: x[1])
-    Class_list.reverse()
+    # Class_list.reverse()
     # Important!!!!!
     # Wether to reverse the list depends on how many rooms there are and the room capacity
     return Class_list
